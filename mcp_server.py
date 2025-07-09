@@ -68,7 +68,55 @@ def fetch_doc(doc_id: str) -> str:
 
 
 # TODO: Write a prompt to rewrite a doc in markdown format
-# TODO: Write a prompt to summarize a doc
+
+@mcp.prompt(
+    name="format",
+    description="Rewrites the contents of the document in Markdown format.",
+)
+def format_document(
+    doc_id: str = Field(description="Id of the document to format"),
+) -> list[base.Message]:
+    prompt = f"""
+    Your goal is to reformat a document to be written with markdown syntax.
+
+    The id of the document you need to reformat is:
+    <document_id>
+    {doc_id}
+    </document_id>
+
+    Add in headers, bullet points, tables, etc as necessary. Feel free to add in extra text, but don't change the meaning of the report.
+    Use the 'edit_document' tool to edit the document. After the document has been edited, respond with the final version of the doc. Don't explain your changes.
+    """
+
+    return [base.UserMessage(prompt)]
+
+@mcp.prompt(
+    name="summarize",
+    description="Summarizes the contents of a document.",
+)
+def summarize_document(
+    doc_id: str = Field(description="Id of the document to summarize"),
+) -> list[base.Message]:
+    if doc_id not in docs:
+        raise ValueError(f"Doc with id {doc_id} not found")
+    
+    doc_content = docs[doc_id]
+    
+    prompt = f"""
+    Please provide a concise summary of the following document:
+
+    <document_id>
+    {doc_id}
+    </document_id>
+
+    <document_content>
+    {doc_content}
+    </document_content>
+
+    Focus on the key points, main themes, and important details. Keep the summary clear and well-structured.
+    """
+
+    return [base.UserMessage(prompt)]
 
 
 if __name__ == "__main__":
